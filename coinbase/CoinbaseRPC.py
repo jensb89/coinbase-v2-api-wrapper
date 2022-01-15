@@ -1,9 +1,3 @@
-# ----- Author ----------------------------------------------------------------
-
-__author__ = 'Michael Montero <mike@resy.com>'
-
-# ----- Imports ---------------------------------------------------------------
-
 from .CoinbaseAPIKeyAuthentication import CoinbaseAPIKeyAuthentication
 from .CoinbaseOAuthAuthentication import CoinbaseOAuthAuthentication
 from .error import CoinbaseAPIException
@@ -14,16 +8,14 @@ import json
 import requests
 import time
 import urllib.parse
-
-# ----- Public Classes --------------------------------------------------------
-
 class CoinbaseRPC(object):
     '''
     Abstracts functionality for executing remote procedure calls.
     '''
-
-    COINBASE_API = 'https://coinbase.com/api/v1'
-
+    
+    COINBASE_API_BASE = 'https://api.coinbase.com/'
+    API_VERSION = 2
+    COINBASE_API = COINBASE_API_BASE + 'v' + str(API_VERSION)
     def __init__(self, authentication, nonce=None):
         self.__authentication = authentication
         self.__nonce = None
@@ -41,7 +33,7 @@ class CoinbaseRPC(object):
 
         headers = {
             'Content-Type': 'application/json',
-            'User-Agent': 'CoinbasePython3/v1'
+            'User-Agent': 'CoinbasePython3/v2'
         }
 
         auth = self.__authentication.get_data()
@@ -64,13 +56,15 @@ class CoinbaseRPC(object):
                     hashlib.sha256) \
                 .hexdigest()
 
-            headers['ACCESS_KEY'] = auth['api_key']
-            headers['ACCESS_SIGNATURE'] = signature
-            headers['ACCESS_NONCE'] = self.__nonce
+            headers['CB-ACCESS-KEY'] = auth['api_key']
+            headers['CB-ACCESS-SIGN'] = signature
+            headers['CB-ACCESS-TIMESTAMP'] = str(self.__nonce)
+            headers['CB-VERSION'] = '2021-12-25'
             headers['Accept'] = 'application/json'
         else:
             raise CoinbaseAPIException('Invalid authentication mechanism')
 
+        #debug: print(f"{method} {url} {headers}")
         if method == 'get':
             request = requests.get(url, headers=headers)
         elif method == 'delete':

@@ -1,17 +1,8 @@
-# ----- Author ----------------------------------------------------------------
-
-__author__ = 'Michael Montero <mike@resy.com>'
-
-# ----- Imports ---------------------------------------------------------------
-
 from .error import CoinbaseAPIException
 
 import json
 import requests
 import urllib.parse
-
-# ----- Public Classes --------------------------------------------------------
-
 class CoinbaseOAuth(object):
     '''
     Handles client OAuth functionality like authorizing a user's account to be
@@ -24,18 +15,19 @@ class CoinbaseOAuth(object):
         self.__redirect_uri = redirect_uri
 
 
-    def create_authorize_url(self, scope=tuple()):
+    def create_authorize_url(self, scope=list()):
         params = {
             'response_type': 'code',
             'client_id': self.__client_id,
-            'client_secret': self.__client_secret,
+            #'client_secret': self.__client_secret,
             'redirect_uri': self.__redirect_uri,
+            'account': 'all' #grants access to all accounts and not just one, see https://developers.coinbase.com/docs/wallet/coinbase-connect/reference
         }
 
         for i in range(len(scope)):
             scope[i] = urllib.parse.quote_plus(scope[i])
 
-        params = urllib.parse.urlencode(params) + 'scope=' + '+'.join(scope)
+        params = urllib.parse.urlencode(params) + '&scope=' + '+'.join(scope)
 
         return 'https://coinbase.com/oauth/authorize?' + params
 
